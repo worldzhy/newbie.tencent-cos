@@ -14,7 +14,7 @@ import {Express} from 'express';
 import {FileInterceptor} from '@nestjs/platform-express';
 import {ApiTags, ApiBearerAuth, ApiBody} from '@nestjs/swagger';
 
-@ApiTags('Cos')
+@ApiTags('Tencent COS')
 @ApiBearerAuth()
 @Controller('cos')
 export class TencentCosController {
@@ -23,14 +23,6 @@ export class TencentCosController {
   @Post('')
   @ApiBody({
     description: "The 'file' is required in request body.",
-    examples: {
-      a: {
-        summary: '1. Upload',
-        value: {
-          file: {},
-        },
-      },
-    },
   })
   @UseInterceptors(FileInterceptor('file'))
   async uploadFile(
@@ -41,42 +33,41 @@ export class TencentCosController {
     )
     file: Express.Multer.File
   ): Promise<any> {
-    let key = '';
-    const {mimetype, buffer, originalname} = file;
-    const path = process.env.STORE_PATH as string;
+    const {mimetype} = file;
+    let path = '';
 
     if (mimetype.includes('video')) {
-      key = `${path}/video/${Date.now()}-${originalname}`;
+      path = 'video';
     }
     if (mimetype.includes('audio')) {
-      key = `${path}/audio/${Date.now()}-${originalname}`;
+      path = 'audio';
     }
     if (mimetype.includes('pdf')) {
-      key = `${path}/pdf/${Date.now()}-${originalname}`;
+      path = 'pdf';
     }
     if (
       mimetype.includes('png') ||
       mimetype.includes('jpg') ||
       mimetype.includes('jpeg')
     ) {
-      key = `${path}/image/${Date.now()}-${originalname}`;
+      path = 'image';
     }
-    return await this.cos.create(buffer, key);
+    return await this.cos.uploadFile({file, path});
   }
 
   @Get('')
   async getFile(@Query('key') key: string) {
-    return await this.cos.get(key);
+    return await this.cos.getObject(key);
   }
 
-  @Post('preview')
-  async getFilePreview(@Body() {key}: {key: string}) {
-    return await this.cos.preview(key);
+  @Post('getSignedDownloadUrl')
+  async getFilePreview(@Body() body: {key: string}) {
+    return await this.cos.getSignedDownloadUrl({key: body.key});
   }
 
   @Post('delete')
   async deleteFile(@Body() {key}: {key: string}): Promise<any> {
-    return await this.cos.remove(key);
+    return await this.cos.deleteFile(key);
   }
 
   @Post('initMultipartUpload')
