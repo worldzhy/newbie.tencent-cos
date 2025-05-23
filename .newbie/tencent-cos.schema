@@ -1,30 +1,30 @@
 // !! ------------------------------------------------------------ //
 // !!            [Microservice] Tencent COS models                      //
 // !! ------------------------------------------------------------ //
-// * S3File                                                        //
-// * S3Bucket                                                      //
+// * CosFile                                                        //
+// * CosBucket                                                      //
 // * ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ ⌄ //
 
-model S3File {
-  id         String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String
-  type       String // could be 'Folder'
-  size       Int? // in bytes
-  s3Bucket   String
-  s3Key      String // File name in S3 bucket.
-  s3Response Json?
-  parentId   String?  @db.Uuid
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+model CosFile {
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  type        String // could be 'Folder'
+  size        Int? // in bytes
+  cosBucket   String
+  cosKey      String // File name in S3 bucket.
+  cosResponse Json?
+  parentId    String?  @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
-  @@schema("microservice/aws-s3")
+  @@schema("microservice/tencent-cos")
 }
 
-model S3Bucket {
+model CosBucket {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@schema("microservice/aws-s3")
+  @@schema("microservice/tencent-cos")
 }
