@@ -5,15 +5,11 @@ import {generateUuid} from '@framework/utilities/random.util';
 import {extname} from 'path';
 import * as COS from 'cos-nodejs-sdk-v5';
 
-const COS_PATH = 'newbie-cos-path';
-
 @Injectable()
 export class TencentCosService {
   private readonly cos: COS;
   private readonly region: string;
   private readonly bucket: string;
-  private readonly baseParams: COS.PutObjectParams;
-  private readonly baseGetParams: COS.GetObjectParams;
 
   constructor(
     private readonly config: ConfigService,
@@ -34,21 +30,6 @@ export class TencentCosService {
         'microservices.tencent-cos.secretKey'
       ),
     });
-    this.baseParams = {
-      Body: Buffer.alloc(0),
-      Key: COS_PATH,
-      Bucket: this.config.getOrThrow<string>(
-        'microservices.tencent-cos.bucket'
-      ),
-      Region: this.region,
-    };
-    this.baseGetParams = {
-      Key: COS_PATH,
-      Bucket: this.config.getOrThrow<string>(
-        'microservices.tencent-cos.bucket'
-      ),
-      Region: this.region,
-    };
   }
 
   async createBucket(bucketName: string) {
@@ -235,11 +216,9 @@ export class TencentCosService {
   }
 
   async initMultipartUpload(key: string) {
-    const {Bucket, Region} = this.baseParams;
-
     return await this.cos.multipartInit({
-      Bucket,
-      Region,
+      Bucket: this.bucket,
+      Region: this.region,
       Key: key,
     });
   }
@@ -250,11 +229,9 @@ export class TencentCosService {
     partNumber: number,
     body: Buffer
   ) {
-    const {Bucket, Region} = this.baseParams;
-
     return await this.cos.multipartUpload({
-      Bucket,
-      Region,
+      Bucket: this.bucket,
+      Region: this.region,
       Key: key,
       UploadId: uploadId,
       PartNumber: partNumber,
@@ -267,11 +244,9 @@ export class TencentCosService {
     uploadId: string,
     parts: {PartNumber: number; ETag: string}[]
   ) {
-    const {Bucket, Region} = this.baseParams;
-
     return this.cos.multipartComplete({
-      Bucket,
-      Region,
+      Bucket: this.bucket,
+      Region: this.region,
       Key: key,
       Parts: parts,
       UploadId: uploadId,
