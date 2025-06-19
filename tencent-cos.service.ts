@@ -199,7 +199,7 @@ export class TencentCosService {
     const path: object[] = [];
 
     // [step 1] Get current file.
-    const file = await this.prisma.s3File.findFirstOrThrow({
+    const file = await this.prisma.cosFile.findFirstOrThrow({
       where: {id: fileId},
       select: {id: true, name: true, type: true, parentId: true},
     });
@@ -314,7 +314,7 @@ export class TencentCosService {
     let path = '';
 
     // [step 1] Get current file.
-    const file = await this.prisma.s3File.findFirstOrThrow({
+    const file = await this.prisma.cosFile.findFirstOrThrow({
       where: {id: fileId},
       select: {id: true, name: true, type: true, parentId: true},
     });
