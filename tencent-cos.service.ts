@@ -3,7 +3,7 @@ import {ConfigService} from '@nestjs/config';
 import {PrismaService} from '@framework/prisma/prisma.service';
 import {generateUuid} from '@framework/utilities/random.util';
 import {extname} from 'path';
-import * as COS from 'cos-nodejs-sdk-v5';
+import COS from 'cos-nodejs-sdk-v5';
 
 @Injectable()
 export class TencentCosService {
@@ -15,20 +15,12 @@ export class TencentCosService {
     private readonly config: ConfigService,
     private readonly prisma: PrismaService
   ) {
-    this.region = this.config.getOrThrow<string>(
-      'microservices.tencent-cos.region'
-    );
-    this.bucket = this.config.getOrThrow<string>(
-      'microservices.tencent-cos.bucket'
-    );
+    this.region = this.config.getOrThrow<string>('microservices.tencent-cos.region');
+    this.bucket = this.config.getOrThrow<string>('microservices.tencent-cos.bucket');
 
     this.cos = new COS({
-      SecretId: this.config.getOrThrow<string>(
-        'microservices.tencent-cos.secretId'
-      ),
-      SecretKey: this.config.getOrThrow<string>(
-        'microservices.tencent-cos.secretKey'
-      ),
+      SecretId: this.config.getOrThrow<string>('microservices.tencent-cos.secretId'),
+      SecretKey: this.config.getOrThrow<string>('microservices.tencent-cos.secretKey'),
     });
   }
 
@@ -60,11 +52,7 @@ export class TencentCosService {
     });
   }
 
-  async createFolder(params: {
-    bucket?: string;
-    name: string;
-    parentId?: string;
-  }) {
+  async createFolder(params: {bucket?: string; name: string; parentId?: string}) {
     let key = params.name;
     if (params.parentId) {
       key = (await this.getFilePathString(params.parentId)) + '/' + params.name;
@@ -89,18 +77,12 @@ export class TencentCosService {
     });
   }
 
-  async uploadFile(params: {
-    file: Express.Multer.File;
-    bucket?: string;
-    parentId?: string;
-    path?: string;
-  }) {
+  async uploadFile(params: {file: Express.Multer.File; bucket?: string; parentId?: string; path?: string}) {
     // [step 1] Generate key.
     let cosKey: string;
     if (params.parentId) {
       cosKey =
-        (await this.getFilePathString(params.parentId)) +
-        `/${generateUuid()}${extname(params.file.originalname)}`;
+        (await this.getFilePathString(params.parentId)) + `/${generateUuid()}${extname(params.file.originalname)}`;
     } else if (params.path) {
       cosKey = `${params.path}/${generateUuid()}${extname(params.file.originalname)}`;
     } else {
@@ -182,12 +164,7 @@ export class TencentCosService {
         },
         (err, data) => {
           if (err) {
-            reject(
-              new HttpException(
-                'Get Signed Download URL Failed',
-                HttpStatus.BAD_REQUEST
-              )
-            );
+            reject(new HttpException('Get Signed Download URL Failed', HttpStatus.BAD_REQUEST));
           }
           resolve({url: data.Url});
         }
@@ -223,12 +200,7 @@ export class TencentCosService {
     });
   }
 
-  async uploadPart(
-    key: string,
-    uploadId: string,
-    partNumber: number,
-    body: Buffer
-  ) {
+  async uploadPart(key: string, uploadId: string, partNumber: number, body: Buffer) {
     return await this.cos.multipartUpload({
       Bucket: this.bucket,
       Region: this.region,
@@ -239,11 +211,7 @@ export class TencentCosService {
     });
   }
 
-  async completeMultipartUpload(
-    key: string,
-    uploadId: string,
-    parts: {PartNumber: number; ETag: string}[]
-  ) {
+  async completeMultipartUpload(key: string, uploadId: string, parts: {PartNumber: number; ETag: string}[]) {
     return this.cos.multipartComplete({
       Bucket: this.bucket,
       Region: this.region,
@@ -256,10 +224,7 @@ export class TencentCosService {
   /**
    * Remove directories and their contents recursively
    */
-  private async deleteFolderInCosRecursively(params: {
-    bucket: string;
-    key: string;
-  }) {
+  private async deleteFolderInCosRecursively(params: {bucket: string; key: string}) {
     try {
       // [step 1] List objects
       const listResponse = await this.cos.getBucket({

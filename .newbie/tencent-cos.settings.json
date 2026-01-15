@@ -14,9 +14,9 @@
     "TENCENT_COS_BUCKET": ""
   },
   "dependencies": {
-    "cos-nodejs-sdk-v5": "^2.14.7"
+    "cos-nodejs-sdk-v5": "latest"
   },
   "devDependencies": {
-    "@types/multer": "^1.4.12"
+    "@types/multer": "latest"
   }
 }
